@@ -1,7 +1,8 @@
 # Blockchain
-Implementing trust management in IoV's through blockchain
-
+Implementing trust management in blockchain on Iov network
+ 
 This code implements a basic trust management system for cars on the Solana blockchain. It allows cars to report on the outcomes of messages received from other cars, and periodically updates the trust scores of all cars based on these reports using a simplified EigenTrust-like algorithm. Let's break down how it works:
+
 1. Data Structures:
 CarTrustState: This struct defines the state associated with each car's trust.
 trust_score: A f64 representing the car's current trust score (likely between 0.0 and 1.0).
@@ -10,10 +11,12 @@ TrustInstruction: This enum defines the different actions that can be performed 
 InitializeCar { initial_trust: f64 }: Initializes a new car's trust state with a given initial trust score.
 ReportMessageOutcome { reporter: Pubkey, message_sender: Pubkey, is_true: bool }: Allows one car (reporter) to report whether a message received from another car (message_sender) was truthful (is_true).
 UpdateTrustScores: Triggers a process to update the trust scores of all cars based on the accumulated reports.
+
 2. Program Entrypoint (process_instruction):
 This function is the entry point of the Solana program. It receives the program_id, a slice of AccountInfo structs representing the accounts involved in the transaction, and the instruction_data.
 It first deserializes the instruction_data into a TrustInstruction enum.
 Then, it uses a match statement to call the appropriate handler function based on the type of instruction.
+
 3. Instruction Handlers:
 initialize_car:
 Takes the program_id, accounts, and an initial_trust score as input.
@@ -48,13 +51,14 @@ It applies a simplified EigenTrust update rule using a damping factor (alpha) an
 The new trust scores are stored in a separate HashMap (new_trust_scores).
 After each iteration, the car_trust_states are updated with the new_trust_scores.
 Finally, it iterates through the updated car_trust_states and serializes them back into their corresponding accounts on Solana.
+
 4. Testing (#[cfg(test)])
 The tests module includes basic unit tests for the initialize_car and report_message_outcome instructions.
 test_initialize_car verifies that a new car account is correctly initialized with the specified trust score.
 test_report_message_outcome simulates a car reporting a truthful message and checks if the sender's trust score increases as expected.
 The CarTrustState::get_packed_len() function is used to determine the size of the CarTrustState struct for account creation.
 In summary, this code provides a foundational framework for a decentralized trust system for cars on Solana. It allows for initialization of trust, reporting of message outcomes, and periodic updates of trust scores based on a simplified version of the EigenTrust algorithm. Key aspects include on-chain state management using Solana accounts, instruction processing, and serialization/deserialization using the borsh crate.
-Important Considerations and Potential Improvements:
+Important Considerations and Potential Improvements:    
 Simplified EigenTrust: The update_trust_scores function implements a very basic version of EigenTrust. A real EigenTrust implementation would require explicit trust relationships between cars (e.g., a car explicitly stating its trust in another car). This would likely involve a separate data structure to store these relationships.
 Message History: The current implementation doesn't store any history of messages or reports. A more robust system might need to track past interactions to make more informed trust updates.
 Sybil Resistance: The current system doesn't have strong Sybil resistance mechanisms. Malicious actors could potentially create multiple car accounts to manipulate trust scores.
